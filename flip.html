@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphic 3D Flip Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4a4a4a 0%, #7d8a95 50%, #a5a5b8 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(181, 159, 59, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(247, 247, 247, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .gallery-container {
+            position: relative;
+            background: rgba(165, 165, 184, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(247, 247, 247, 0.3);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 
+                0 8px 32px rgba(74, 74, 74, 0.4),
+                inset 0 1px 0 rgba(247, 247, 247, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .gallery-container:hover {
+            box-shadow: 
+                0 12px 40px rgba(74, 74, 74, 0.5),
+                inset 0 1px 0 rgba(247, 247, 247, 0.3);
+            transform: translateY(-2px);
+        }
+
+        #flip-gallery {
+            position: relative;
+            width: 260px;
+            height: 420px;
+            text-align: center;
+            perspective: 1000px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 40px rgba(74, 74, 74, 0.5),
+                inset 0 1px 0 rgba(247, 247, 247, 0.2),
+                0 1px 0 rgba(181, 159, 59, 0.3);
+            background: rgba(125, 138, 149, 0.15);
+        }
+
+        @media (min-width: 600px) {
+            #flip-gallery {
+                width: 320px;
+                height: 520px;
+            }
+        }
+
+        #flip-gallery::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(181, 159, 59, 0.4) 45%, 
+                rgba(181, 159, 59, 0.8) 50%, 
+                rgba(181, 159, 59, 0.4) 55%, 
+                transparent 100%);
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 10;
+            box-shadow: 
+                0 1px 2px rgba(74, 74, 74, 0.4),
+                0 -1px 2px rgba(247, 247, 247, 0.2);
+        }
+
+        #flip-gallery::before {
+            content: attr(data-title);
+            color: rgba(247, 247, 247, 0.9);
+            font-size: 0.875rem;
+            font-weight: 500;
+            left: 0;
+            position: absolute;
+            top: calc(100% + 1.5rem);
+            width: 100%;
+            text-align: center;
+            line-height: 1.5;
+            opacity: var(--title-opacity, 0);
+            transform: translateY(var(--title-y, 0));
+            transition: opacity 600ms ease-in-out, transform 600ms ease-in-out;
+            text-shadow: 0 2px 4px rgba(74, 74, 74, 0.5);
+        }
+
+        .unite {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+            background-size: 260px 420px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        @media (min-width: 600px) {
+            .unite {
+                background-size: 320px 520px;
+            }
+        }
+
+        .top,
+        .overlay-top {
+            top: 0;
+            transform-origin: bottom;
+            background-position: top;
+        }
+
+        .bottom,
+        .overlay-bottom {
+            bottom: 0;
+            transform-origin: top;
+            background-position: bottom;
+        }
+
+        .navigation {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: rgba(125, 138, 149, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(247, 247, 247, 0.2);
+            border-radius: 50%;
+            color: rgba(247, 247, 247, 0.9);
+            cursor: pointer;
+            padding: 12px;
+            transition: all 0.3s ease;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 12px rgba(74, 74, 74, 0.4),
+                inset 0 1px 0 rgba(247, 247, 247, 0.1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(181, 159, 59, 0.3);
+            border-color: rgba(181, 159, 59, 0.4);
+            color: rgba(247, 247, 247, 1);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 20px rgba(74, 74, 74, 0.5),
+                inset 0 1px 0 rgba(247, 247, 247, 0.2);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 2px 8px rgba(74, 74, 74, 0.4),
+                inset 0 1px 0 rgba(247, 247, 247, 0.1);
+        }
+
+        .nav-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .indicator {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(125, 138, 149, 0.4);
+            border: 1px solid rgba(247, 247, 247, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dot:hover {
+            background: rgba(181, 159, 59, 0.6);
+            border-color: rgba(181, 159, 59, 0.8);
+            transform: scale(1.1);
+        }
+
+        .dot.active {
+            background: rgba(181, 159, 59, 0.8);
+            border-color: rgba(181, 159, 59, 1);
+            transform: scale(1.2);
+            box-shadow: 0 0 8px rgba(181, 159, 59, 0.5);
+        }
+
+        /* Animation keyframes */
+        @keyframes flipTop {
+            0% { transform: rotateX(0); }
+            50% { transform: rotateX(-90deg); }
+            100% { transform: rotateX(-90deg); }
+        }
+
+        @keyframes flipBottom {
+            0% { transform: rotateX(90deg); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0); }
+        }
+
+        @keyframes flipTopReverse {
+            0% { transform: rotateX(-90deg); }
+            50% { transform: rotateX(-90deg); }
+            100% { transform: rotateX(0); }
+        }
+
+        @keyframes flipBottomReverse {
+            0% { transform: rotateX(0); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(90deg); }
+        }
+
+        .flip-top {
+            animation: flipTop 800ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flip-bottom {
+            animation: flipBottom 800ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flip-top-reverse {
+            animation: flipTopReverse 800ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flip-bottom-reverse {
+            animation: flipBottomReverse 800ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Loading animation */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(125, 138, 149, 0.3);
+            border-top: 3px solid rgba(181, 159, 59, 0.8);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 100;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <!-- Flip Gallery -->
+        <div id="flip-gallery">
+            <div class="loading" id="loading"></div>
+            <div class="top unite"></div>
+            <div class="bottom unite"></div>
+            <div class="overlay-top unite"></div>
+            <div class="overlay-bottom unite"></div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button type="button" class="nav-btn" id="prevBtn" title="Previous">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            
+            <div class="indicator" id="indicator">
+                <!-- Dots will be generated by JavaScript -->
+            </div>
+            
+            <button type="button" class="nav-btn" id="nextBtn" title="Next">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Image data with beautiful nature/landscape images
+        const images = [
+            { title: 'Mystic Mountain', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=1000&fit=crop' },
+            { title: 'Ocean Serenity', url: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=600&h=1000&fit=crop' },
+            { title: 'Forest Dreams', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=1000&fit=crop' },
+            { title: 'Desert Mirage', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=1000&fit=crop' },
+            { title: 'City Glow', url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=1000&fit=crop' },
+            { title: 'Aurora Valley', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=1000&fit=crop' }
+        ];
+
+        const FLIP_SPEED = 800;
+        const AUTO_CHANGE_DELAY = 4000; // 4 seconds between auto changes
+        let currentIndex = 0;
+        let uniteElements = [];
+        let isAnimating = false;
+        let isLoading = true;
+        let autoChangeTimer = null;
+        let isPaused = false;
+
+        // Initialize gallery
+        function init() {
+            const gallery = document.getElementById('flip-gallery');
+            uniteElements = gallery.querySelectorAll('.unite');
+            
+            // Create indicator dots
+            createIndicatorDots();
+            
+            // Preload first image
+            preloadImage(images[currentIndex].url).then(() => {
+                isLoading = false;
+                document.getElementById('loading').style.display = 'none';
+                defineFirstImg();
+                startAutoChange(); // Start auto-changing after initialization
+            });
+            
+            // Add event listeners
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                pauseAutoChange();
+                updateIndex(-1);
+                resumeAutoChangeAfterDelay();
+            });
+            
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                pauseAutoChange();
+                updateIndex(1);
+                resumeAutoChangeAfterDelay();
+            });
+            
+            // Pause on gallery hover
+            const galleryContainer = document.querySelector('.gallery-container');
+            galleryContainer.addEventListener('mouseenter', pauseAutoChange);
+            galleryContainer.addEventListener('mouseleave', resumeAutoChange);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') {
+                    pauseAutoChange();
+                    updateIndex(-1);
+                    resumeAutoChangeAfterDelay();
+                }
+                if (e.key === 'ArrowRight') {
+                    pauseAutoChange();
+                    updateIndex(1);
+                    resumeAutoChangeAfterDelay();
+                }
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    toggleAutoChange();
+                }
+            });
+        }
+
+        function createIndicatorDots() {
+            const indicator = document.getElementById('indicator');
+            images.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (index === currentIndex) dot.classList.add('active');
+                dot.addEventListener('click', () => {
+                    pauseAutoChange();
+                    goToIndex(index);
+                    resumeAutoChangeAfterDelay();
+                });
+                indicator.appendChild(dot);
+            });
+        }
+
+        function updateIndicatorDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        function preloadImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = resolve;
+                img.onerror = resolve;
+                img.src = url;
+            });
+        }
+
+        function defineFirstImg() {
+            uniteElements.forEach(setActiveImage);
+            setImageTitle();
+            updateIndicatorDots();
+        }
+
+        function setActiveImage(el) {
+            el.style.backgroundImage = `url('${images[currentIndex].url}')`;
+        }
+
+        function setImageTitle() {
+            const gallery = document.getElementById('flip-gallery');
+            gallery.setAttribute('data-title', images[currentIndex].title);
+            gallery.style.setProperty('--title-y', '0');
+            gallery.style.setProperty('--title-opacity', '1');
+        }
+
+        function updateGallery(nextIndex, isReverse = false) {
+            if (isAnimating || isLoading) return;
+            isAnimating = true;
+
+            const gallery = document.getElementById('flip-gallery');
+            const overlayTop = gallery.querySelector('.overlay-top');
+            const overlayBottom = gallery.querySelector('.overlay-bottom');
+
+            // Remove previous animation classes
+            overlayTop.className = overlayTop.className.replace(/flip-\w+/g, '');
+            overlayBottom.className = overlayBottom.className.replace(/flip-\w+/g, '');
+
+            // Add animation classes
+            if (isReverse) {
+                overlayTop.classList.add('flip-top-reverse');
+                overlayBottom.classList.add('flip-bottom-reverse');
+            } else {
+                overlayTop.classList.add('flip-top');
+                overlayBottom.classList.add('flip-bottom');
+            }
+
+            // Hide title
+            gallery.style.setProperty('--title-y', '-1rem');
+            gallery.style.setProperty('--title-opacity', '0');
+            gallery.setAttribute('data-title', '');
+
+            // Preload next image
+            preloadImage(images[nextIndex].url);
+
+            // Update images with slight delay for smooth animation
+            uniteElements.forEach((el, idx) => {
+                const delay = (isReverse && (idx !== 1 && idx !== 2)) ||
+                             (!isReverse && (idx === 1 || idx === 2))
+                    ? FLIP_SPEED - 200
+                    : 0;
+
+                setTimeout(() => setActiveImage(el), delay);
+            });
+
+            // Reveal new title halfway through animation
+            setTimeout(() => {
+                setImageTitle();
+                updateIndicatorDots();
+            }, FLIP_SPEED * 0.5);
+
+            // Reset animation state
+            setTimeout(() => {
+                isAnimating = false;
+                // Remove animation classes
+                overlayTop.className = overlayTop.className.replace(/flip-\w+/g, '');
+                overlayBottom.className = overlayBottom.className.replace(/flip-\w+/g, '');
+                
+                // If this was an auto-change, continue the cycle
+                if (!isPaused && autoChangeTimer === null) {
+                    startAutoChange();
+                }
+            }, FLIP_SPEED);
+        }
+
+        function updateIndex(increment) {
+            if (isAnimating || isLoading) return;
+            
+            const inc = Number(increment);
+            const newIndex = (currentIndex + inc + images.length) % images.length;
+            const isReverse = inc < 0;
+            
+            currentIndex = newIndex;
+            updateGallery(newIndex, isReverse);
+        }
+
+        function goToIndex(index) {
+            if (isAnimating || isLoading || index === currentIndex) return;
+            
+            const isReverse = index < currentIndex;
+            currentIndex = index;
+            updateGallery(index, isReverse);
+        }
+
+        // Auto-change functionality
+        function startAutoChange() {
+            if (autoChangeTimer) clearTimeout(autoChangeTimer);
+            autoChangeTimer = setTimeout(() => {
+                if (!isPaused && !isAnimating && !isLoading) {
+                    updateIndex(1);
+                    startAutoChange(); // Continue the cycle
+                } else {
+                    startAutoChange(); // Retry if conditions aren't met
+                }
+            }, AUTO_CHANGE_DELAY);
+        }
+
+        function pauseAutoChange() {
+            isPaused = true;
+            if (autoChangeTimer) {
+                clearTimeout(autoChangeTimer);
+                autoChangeTimer = null;
+            }
+        }
+
+        function resumeAutoChange() {
+            if (!isPaused) return;
+            isPaused = false;
+            startAutoChange();
+        }
+
+        function resumeAutoChangeAfterDelay() {
+            setTimeout(() => {
+                resumeAutoChange();
+            }, AUTO_CHANGE_DELAY);
+        }
+
+        function toggleAutoChange() {
+            if (isPaused) {
+                resumeAutoChange();
+            } else {
+                pauseAutoChange();
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
